@@ -4,6 +4,8 @@ const route = require('./routes/route.js')
 const app = express();
 
 app.use(express.json());
+mongoose.set('strictQuery', true);
+
 
 mongoose.connect('mongodb+srv://yashrajsinh09:yashraj2727@assignment.lhpfmud.mongodb.net/group1Database', {useNewUrlParser: true})
 .then(() => console.log('MongoDb is connected'))
