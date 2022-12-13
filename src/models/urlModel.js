@@ -7,6 +7,6 @@ const urlSchema = new mongoose.Schema({
 
     shortUrl:{type: String,required: true,unique:true,trim:true}
     
-}, { timestamps: true });
+}, { timestamps: false});
 
 module.exports = mongoose.model('URL', urlSchema)
