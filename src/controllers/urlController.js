@@ -38,12 +38,18 @@ const createShortUrl = async function (req, res) {
 }
 
 const getUrl = async function (req, res) {
-    let url = req.params.urlCode
+    try {
+        let url = req.params.urlCode
 
-    let urlDetails = await urlModel.findOne({ urlCode: url })
-    if (!urlDetails) return res.status(400).json({ status: false, message: `This url ${url} not found` })
+        let urlDetails = await urlModel.findOne({ urlCode: url })
+        if (!urlDetails) return res.status(400).json({ status: false, message: `This url ${url} not found` })
 
-    return res.status(302).redirect(urlDetails.longUrl)
-
+        return res.status(302).redirect(urlDetails.longUrl)
+    }
+    catch (err) {
+        return res.status(500).json({ status: false, message: error.message })
+    }
 }
+
+
 module.exports = { createShortUrl, getUrl }
