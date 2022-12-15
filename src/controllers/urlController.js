@@ -21,7 +21,8 @@ redisClient.on("connect", async function () {
 const SET_ASYNC = promisify(redisClient.SET).bind(redisClient);
 const GET_ASYNC = promisify(redisClient.GET).bind(redisClient);
 
-//  create shorturl 
+
+// ==> create shorturl 
 exports.createShortUrl = async function (req, res) {
     try {
         let longUrl = req.body.longUrl
@@ -37,45 +38,40 @@ exports.createShortUrl = async function (req, res) {
             .catch(() => null)
 
         if (!validateUrl) return res.status(400).json({ status: false, message: `This Link: ${longUrl} is not Valid URL.` })
-        //fetching data from cache
+        // ==> fetching data from cache
         let fromCacheData = await GET_ASYNC(`${longUrl}`)
         if (fromCacheData) {
             fromCacheData = JSON.parse(fromCacheData)
             return res.status(200).json({ status: true, message: "short url is already present/from cache", data: fromCacheData })
-        } 
-        else{
-        let findUrl = await urlModel.findOne({ longUrl: longUrl }).select({ _id: 0, longUrl: 1, shortUrl: 1, urlCode: 1 })
-        await SET_ASYNC(`${longUrl}`, JSON.stringify(findUrl), "EX", 20)
-        if (findUrl) return res.status(200).json({ status: true, message: "short url is already present/from database", data: findUrl })
         }
-            //  create new shorturl
-            let baseUrl = "http://localhost:3000/"
-            let shortUrl = shortId.generate().toLowerCase()
-            let createShortUrl = baseUrl + shortUrl
-            let obj = {
-                longUrl: longUrl,
-                shortUrl: createShortUrl,
-                urlCode: shortUrl
-                }
-
-                 //fetching data from database
-            
-            
-           
-            await urlModel.create(obj)
-            await SET_ASYNC(`${longUrl}`, JSON.stringify(obj), "EX", 20)
-            return res.status(201).json({ status: true, data: obj })
-            }   
-     catch (error) {
+        else {
+            // ==> fetching data from database
+            let findUrl = await urlModel.findOne({ longUrl: longUrl }).select({ _id: 0, longUrl: 1, shortUrl: 1, urlCode: 1 })
+            await SET_ASYNC(`${longUrl}`, JSON.stringify(findUrl), "EX", 20)
+            if (findUrl) return res.status(200).json({ status: true, message: "short url is already present/from database", data: findUrl })
+        }
+        // ==> create new shorturl
+        let baseUrl = "http://localhost:3000/"
+        let shortUrl = shortId.generate().toLowerCase()
+        let createShortUrl = baseUrl + shortUrl
+        let obj = {
+            longUrl: longUrl,
+            shortUrl: createShortUrl,
+            urlCode: shortUrl
+        }
+        await urlModel.create(obj)
+        await SET_ASYNC(`${longUrl}`, JSON.stringify(obj), "EX", 20)
+        return res.status(201).json({ status: true, data: obj })
+    }
+    catch (error) {
         return res.status(500).json({ status: false, message: error.message })
     }
 }
 
-
+// ==> Redirect to the original URL
 exports.getUrl = async function (req, res) {
     try {
         let urlCode = req.params.urlCode
-        if (!shortId.isValid(urlCode)) return res.status(400).send({ status: false, message: "Please provide a valid URL code" })
 
         let fromCacheData = await GET_ASYNC(`${urlCode}`)
         if (fromCacheData) {
