@@ -7,7 +7,7 @@ app.use(express.json());
 mongoose.set('strictQuery', true);
 
 
-mongoose.connect('mongodb+srv://shivamp2001:shivamp2001@mycluster.au9iv5p.mongodb.net/project-4', {useNewUrlParser: true})
+mongoose.connect('mongodb+srv://shivamp2001:shivamp2001@mycluster.au9iv5p.mongodb.net/group1Database', {useNewUrlParser: true})
 .then(() => console.log('MongoDb is connected'))
     .catch(err => console.log(err));
 
