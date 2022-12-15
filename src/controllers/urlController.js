@@ -66,7 +66,7 @@ exports.createShortUrl = async function (req, res) {
     }
 }
 
-        //get url
+      
 exports.getUrl = async function (req, res) {
     try {
         let urlCode = req.params.urlCode
@@ -76,7 +76,7 @@ exports.getUrl = async function (req, res) {
              return res.status(302).redirect(fromCacheData.longUrl)
         }else{
         let urlDetails = await urlModel.findOne({ urlCode: urlCode })
-        if (!urlDetails) return res.status(400).json({ status: false, message: `This url ${urlCode} not found` })
+        if (!urlDetails) return res.status(404).json({ status: false, message: `This url ${urlCode} not found` })
         await SET_ASYNC(`${urlCode}`, JSON.stringify(urlDetails))
         return res.status(302).redirect(urlDetails.longUrl)
     }
