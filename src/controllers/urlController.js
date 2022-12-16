@@ -26,10 +26,18 @@ const GET_ASYNC = promisify(redisClient.GET).bind(redisClient);
 exports.createShortUrl = async function (req, res) {
     try {
         let longUrl = req.body.longUrl
+       
         if (!longUrl) return res.status(400).json({ status: false, message: "Please provide longUrl" })
         if (!validURL.isUri(longUrl)) return res.status(400).json({ status: false, message: `This url ${longUrl} is not valid` })
 
-        let option = {
+        // ==> fetching data from cache
+        let fromCacheData = await GET_ASYNC(`${longUrl}`)
+        if (fromCacheData) {
+            fromCacheData = JSON.parse(fromCacheData)
+            return res.status(200).json({ status: true, message: "short url is already present/from cache", data: fromCacheData })
+        }
+        // ==> Axios call
+        let option = {    
             method: 'get',
             url: longUrl
         }
@@ -38,18 +46,12 @@ exports.createShortUrl = async function (req, res) {
             .catch(() => null)
 
         if (!validateUrl) return res.status(400).json({ status: false, message: `This Link: ${longUrl} is not Valid URL.` })
-        // ==> fetching data from cache
-        let fromCacheData = await GET_ASYNC(`${longUrl}`)
-        if (fromCacheData) {
-            fromCacheData = JSON.parse(fromCacheData)
-            return res.status(200).json({ status: true, message: "short url is already present/from cache", data: fromCacheData })
-        }
-        else {
+      
             // ==> fetching data from database
             let findUrl = await urlModel.findOne({ longUrl: longUrl }).select({ _id: 0, longUrl: 1, shortUrl: 1, urlCode: 1 })
             await SET_ASYNC(`${longUrl}`, JSON.stringify(findUrl), "EX", 20)
             if (findUrl) return res.status(200).json({ status: true, message: "short url is already present/from database", data: findUrl })
-        }
+        
         // ==> create new shorturl
         let baseUrl = "http://localhost:3000/"
         let shortUrl = shortId.generate().toLowerCase()
