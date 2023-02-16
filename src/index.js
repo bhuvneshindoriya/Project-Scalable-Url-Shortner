@@ -3,13 +3,14 @@ const mongoose = require('mongoose');
 const route = require('./routes/route.js')
 const app = express();
 
-app.use(express.json());
+express().use(express.json());
 
 app.use((err, req, res, next) => {
   if (err.message === "Unexpected end of JSON input") {
     return res
       .status(400)
       .send({
+        
         status: false,
         message: "ERROR Parsing Data, Please Provide a Valid JSON",
       });
@@ -22,7 +23,7 @@ mongoose.connect('mongodb+srv://shivamp2001:shivamp2001@mycluster.au9iv5p.mongod
   .then(() => console.log('MongoDb is connected'))
   .catch(err => console.log(err));
 
-app.use('/', route)
+app.use('/abc', route)
 
 app.use((req, res) => {
   res.status(400).send({ status: false, message: 'Invalid URL' })

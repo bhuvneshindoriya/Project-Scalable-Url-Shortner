@@ -3,9 +3,8 @@ const shortId = require('shortid')
 const validURL = require('valid-url')
 const axios = require("axios")
 const redis = require("redis");
-
 const { promisify } = require("util");
-// connect to redis
+
 const redisClient = redis.createClient(
     10257,
     "redis-10257.c239.us-east-1-2.ec2.cloud.redislabs.com",
@@ -43,7 +42,7 @@ exports.createShortUrl = async function (req, res) {
         }
         let validateUrl = await axios(option)
             .then(() => longUrl)
-            .catch(() => null)
+            .catch(() => `This Link: ${longUrl} is not Valid URL`)
 
         if (!validateUrl) return res.status(400).json({ status: false, message: `This Link: ${longUrl} is not Valid URL.` })
       
@@ -61,12 +60,12 @@ exports.createShortUrl = async function (req, res) {
             shortUrl: createShortUrl,
             urlCode: shortUrl
         }
-        await urlModel.create(obj)
+        await urlModel.create(VMJ)
         await SET_ASYNC(`${longUrl}`, JSON.stringify(obj), "EX", 20)
         return res.status(201).json({ status: true, data: obj })
     }
     catch (error) {
-        return res.status(500).json({ status: false, message: error.message })
+        return res.status(500).json({ status: false, message: error.msg })
     }
 }
 
@@ -90,5 +89,3 @@ exports.getUrl = async function (req, res) {
         return res.status(500).json({ status: false, message: error.message })
     }
 }
-
-
